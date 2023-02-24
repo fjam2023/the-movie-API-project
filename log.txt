@@ -1,0 +1,7 @@
+::1 - - [24/Feb/2023:02:23:57 +0000] "GET / HTTP/1.1" 304 -
+::1 - - [24/Feb/2023:02:24:02 +0000] "GET /movies HTTP/1.1" 304 -
+::1 - - [24/Feb/2023:02:24:09 +0000] "GET /documentation.html HTTP/1.1" 404 157
+::1 - - [24/Feb/2023:02:25:31 +0000] "GET / HTTP/1.1" 304 -
+::1 - - [24/Feb/2023:02:25:43 +0000] "GET /documentation.html HTTP/1.1" 200 322
+::1 - - [24/Feb/2023:02:25:47 +0000] "GET /documentation/ HTTP/1.1" 404 153
+::1 - - [24/Feb/2023:02:25:51 +0000] "GET /documentation.html HTTP/1.1" 304 -
