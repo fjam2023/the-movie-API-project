@@ -85,6 +85,23 @@ let topTenMovies = [
     },
 ];
 
+let users = [
+    {
+        id: '1',
+        name: 'Saule',
+        favoriteMovieList: []
+    },
+    {
+        id: '2',
+        name: 'Bakhtiyar',
+        favoriteMovieList: ["Inception", "Coco"]
+    },
+    {
+        id: '3',
+        name: 'Juan',
+        favoriteMovieList: []
+    }
+]
 app.get('/', (req, res)=>{
     res.send('Welcome to my Movie Club!');
 });
@@ -94,7 +111,7 @@ app.get('/documentation', (req, res) => {
 });
 
 //returns a list of ALL movies using GET
-app.get('/movies', (req,res)=> {
+app.get('/movies', (req, res)=> {
     res.json(topTenMovies);
 });
 
@@ -109,22 +126,21 @@ app.get('/movies/:title', (req, res)=> {
     }
 });
 
-//genre search by title
-app.get('/movies/:title/:genre',(req,res)=>{
-    const {genreType}=req.params;
-    const genre=topTenMovies.find(movie=>movie.genre.name === genreType).genre;
-
+//genre search 
+app.get('/movies/genre/:genreName', (req, res) => {
+    const {genreName}=req.params;
+    const genre=topTenMovies.find(movie=>movie.genre === genreName).genre; 
     if(genre){
-        res.status(201).json(movie);
+        res.status(201).json(genre);
     }else{
         res.status(400).send('no genre found');
     }
 });
 
 //director data
-app.get('/movies/:title/:director',(req,res)=>{
+app.get('/movies/director/:directorName',(req,res)=>{
     const{directorName} =req.params;
-    const director =movies.find(movie=> movie.director.name===directorName).director;
+    const director =topTenMovies.find(movie=> movie.director===directorName).director;
     if (director){
         res.status(201).json(director);
     }else{
@@ -161,23 +177,39 @@ app.put('/users/:id', (req, res)=>{
     }
 });
 
-//add movies to favorites using GET
-app.get('/movies/:favourites', (req,res)=>{
-    res.send('movie added to favorites');
+//add movies to favorites using POST
+app.post('/users/:id/:favoriteMovieTitle', (req,res)=>{
+    const{id, favoriteMovieTitle}=req.params;
+
+    let user=users.find(user=>user.id ==id);
+
+    if(user){
+        user.favoriteMovieList.push(favoriteMovieTitle);
+        res.status(201).send('movie added to your favorites list');
+        console.log(favoriteMovieTitle);
+    }else{
+        res.status(400).send('movie not added');
+    }
 });
 
 //remove movies from favourites using DELETE
-app.delete('/movies/:favorites', (req,res)=>{
-    res.send('movie removed from favorites');
+app.delete('/users/:id/:favoriteMovieTitle', (req,res)=>{
+    const {id, favoriteMovieTitle} =req.params;
+    let user = users.find(user=>user.id ==id);
+    if(user){ user.favoriteMovieList=user.favoriteMovieList.filter(title=>title !== favoriteMovieTitle);
+        res.status(201).send('movie was deleted from your favorites');
+    }else{
+        res.status(400).send('movie was not deleted');
+    }
 });
 
 // Deletes user account using DELETE method
 app.delete('/users/:id', (req, res) => {
     const {id} = req.params;
-    let user = users.find((user) => { return user.id === req.params.id });
+    let user = users.find(user => user.id === id );
 
     if (user) {
-      users = users.filter((obj) => { return obj.id !== req.params.id });
+      users = users.filter(user => user.id !== req.params.id);
       res.status(201).send('User account ' + req.params.id + ' was deleted.');
     }
   });
