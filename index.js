@@ -160,7 +160,7 @@ let topTenMovies = [
     },
     {
         title: 'Star Wars', 
-        description: '',
+        description: 'Luke Skywalker joins forces with a Jedi Knight, a cocky pilot, a Wookiee and two droids to save the galaxy from the Empire\'s world-destroying battle station, while also attempting to rescue Princess Leia from the mysterious Darth Vader.',
         genre: {
             name: 'science fiction',
             description: 'Science fiction (or sci-fi) is a film genre that uses speculative, fictional science-based depictions of phenomena that are not fully accepted by mainstream science, such as extraterrestrial lifeforms, spacecraft, robots, cyborgs, dinosaurs, interstellar travel, time travel, or other technologies.'
@@ -200,17 +200,17 @@ let users = [
     {
         id: '1',
         name: 'Saule',
-        favoriteMovieList: []
+        favoriteMovieList: ["Avatar","Pirates of the Caribbean"]
     },
     {
         id: '2',
         name: 'Bakhtiyar',
-        favoriteMovieList: ["Inception", "Coco"]
+        favoriteMovieList: ["Avatar"]
     },
     {
         id: '3',
         name: 'Juan',
-        favoriteMovieList: []
+        favoriteMovieList: ["Inception"]
     }
 ]
 app.get('/', (req, res)=>{
