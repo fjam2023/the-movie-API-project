@@ -3,14 +3,25 @@ const express = require('express'),
       fs = require('fs'),
       path = require('path'),
       bodyParser=require('body-parser'),
-      uuid=require('uuid');
+      uuid=require('uuid'),
+      mongoose = require('mongoose'),
+      Models = require('./models.js');
 
 const app = express();
+
+const Movies = Models.Movie;
+const Users = Models.User;
+
+mongoose.connect('mongodb://127.0.0.1:27017/MyFLIXMovieDB', { useNewUrlParser: true, useUnifiedTopology: true });
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
 const accessLogStream = fs.createWriteStream(path.join(__dirname, "log.txt"),{flags: 'a'})
 
 app.use(morgan('common', {stream: accessLogStream}));
 app.use(express.static('public'));
-app.use(bodyParser.json());
+
 
 let topTenMovies = [
     {
@@ -25,8 +36,7 @@ let topTenMovies = [
         {
             name: 'Peter Jackson',
             bio: 'Sir Peter Robert Jackson is a New Zealand film director, screenwriter and producer.',
-            Birthyear: '1961',
-            Deathyear: 'present'
+            Birthyear: '1961'
         },
         imageUrl: 'https://pixabay.com/images/id-2021410/',
         year: '2003',
@@ -43,8 +53,7 @@ let topTenMovies = [
         {
             name: 'Christopher Nolan',
             bio: 'Christopher Edward Nolan is a British-American filmmaker who is known for his Hollywood blockbusters with complex storytelling, Nolan is considered a leading filmmaker of the 21st century.',
-            Birthyear: '1970',
-            Deathyear: 'present'
+            Birthyear: '1970'
         },
         imageUrl: 'https://pixabay.com/images/id-3265473/',
         year: '2010',
@@ -61,8 +70,7 @@ let topTenMovies = [
         {
             name: 'Hayao Miyazaki',
             bio: 'Hayao Miyazaki is a Japanese animator, director, producer, screenwriter, author, and manga artist.',
-            Birthyear: '1941',
-            Deathyear: 'present'
+            Birthyear: '1941'
         },
         imageUrl: 'https://pixabay.com/images/id-1754734/',
         year: '2001',
@@ -79,8 +87,7 @@ let topTenMovies = [
         {
             name: 'Christopher Nolan',
             bio: 'Christopher Edward Nolan is a British-American filmmaker who is known for his Hollywood blockbusters with complex storytelling, Nolan is considered a leading filmmaker of the 21st century.',
-            Birthyear: '1970',
-            Deathyear: 'present'
+            Birthyear: '1970'
         },
         imageUrl: 'https://pixabay.com/images/id-233171/',
         year: '2006',
@@ -97,8 +104,7 @@ let topTenMovies = [
         {
             name: 'Gore Verbinski',
             bio: 'Gregor Justin "Gore" Verbinski is an American film director, screenwriter, producer, and musician.',
-            Birthyear: '1964',
-            Deathyear: 'present'
+            Birthyear: '1964'
         },
         imageUrl: 'https://images.app.goo.gl/Q6KMpFhvACebtH2PA',
         year: '2003',
@@ -115,8 +121,7 @@ let topTenMovies = [
         {
             name: 'Lee Unkrich',
             bio: 'Lee Edward Unkrich (born August 8, 1967) is an American film director, film editor, screenwriter, and animator.',
-            Birthyear: '1967',
-            Deathyear: 'present'
+            Birthyear: '1967'
         },
         imageUrl: 'https://images.app.goo.gl/Jx5ymfdFqh7rP6U67',
         year: '2017',
@@ -133,8 +138,7 @@ let topTenMovies = [
         {
             name: 'David Fincher',
             bio: 'David Andrew Leo Fincher is an American film director. His films, mostly psychological thrillers, have received 40 nominations at the Academy Awards, including three for him as Best Director.',
-            Birthyear: '1962',
-            Deathyear: 'present'
+            Birthyear: '1962'
         },
         imageUrl: 'https://images.app.goo.gl/MdL5YuL9EF1sfh7B9',
         year: '2014',
@@ -151,8 +155,7 @@ let topTenMovies = [
         { 
             name: 'Victor Fleming',
             bio: 'Victor Lonzo Fleming was an American film director, cinematographer, and producer.',
-            Birthyear: '1889',
-            Deathyear: '1949'
+            Birthyear: '1889'
         },
         imageUrl: 'https://images.app.goo.gl/MdL5YuL9EF1sfh7B9',
         year:'1939',
@@ -169,8 +172,7 @@ let topTenMovies = [
         {
             name: 'George Lucas',
             bio: 'George Walton Lucas Jr. is an American filmmaker. Lucas is best known for creating the Star Wars and Indiana Jones franchises and founding Lucasfilm, LucasArts, Industrial Light & Magic and THX.',
-            Birthyear: '1944',
-            Deathyear: 'present'
+            Birthyear: '1944'
         },
         imageUrl: 'https://images.app.goo.gl/npzmKEErmkW571eM7',
         year: '1977',
@@ -187,8 +189,7 @@ let topTenMovies = [
         {
             name: 'James Cameron', 
             bio: 'James Francis Cameron is a Canadian filmmaker, who is a major figure in the post-New Hollywood era, he is considered one of the industry\'s most innovative filmmakers, regularly pushing the boundaries of cinematic capability with his use of novel technologies.',
-            Birthyear: '1954',
-            Deathyear: 'present'
+            Birthyear: '1954'
         },
         imageUrl: 'https://images.app.goo.gl/vLw2cKVqEzEZYDto7',
         year: '2022',
@@ -199,20 +200,46 @@ let topTenMovies = [
 let users = [
     {
         id: '1',
-        name: 'Saule',
-        favoriteMovieList: ["Avatar","Pirates of the Caribbean"]
+        username: 'Saule',
+        password: 'saule123',
+        email: 'saule@email.com',
+        Birthday: '1991-10-10',
+        FavoriteMovies: ["Avatar","Pirates of the Caribbean"]
     },
     {
         id: '2',
-        name: 'Bakhtiyar',
-        favoriteMovieList: ["Avatar"]
+        username: 'Bakhtiyar',
+        password: 'bakhtiyar123',
+        email: 'bakhtiyar@email.com',
+        Birthday: '1992-10-10',
+        FavoriteMovies: ["Avatar"]
     },
     {
         id: '3',
-        name: 'Juan',
-        favoriteMovieList: ["Inception"]
+        username: 'Juan',
+        password: 'juan123',
+        email: 'juan@email.com',
+        Birthday: '1993-10-10',
+        FavoriteMovies: ["Inception"]
+    },
+    {
+        id:'4',
+        username: 'Katherine',
+        password: 'katherine123',
+        email: 'katherine@email.com',
+        Birthday: '1994-10-10',
+        FavoriteMovies: ["Coco"]
+    },
+    {
+        id: '5',
+        username: 'Janet',
+        password: 'janet123',
+        email: 'janet@email.com',
+        Birthday: '1998-10-10',
+        FavoriteMovies: ["Star Wars"]
     }
 ]
+
 app.get('/', (req, res)=>{
     res.send('Welcome to my Movie Club!');
 });
@@ -223,106 +250,154 @@ app.get('/documentation', (req, res) => {
 
 //returns a list of ALL movies using GET
 app.get('/movies', (req, res)=> {
-    res.json(topTenMovies);
+    Movies.find()
+        .then((movies)=>{
+            res.status(201).json(movies);
+        })
+        .catch((err)=>{
+            console.error(err);
+            res.status(500).send("Error: "+err);
+        });
 });
 
 //returns movie search by title
 app.get('/movies/:title', (req, res)=> {
-    const {title}=req.params;
-    const movie=topTenMovies.find(movie=>movie.title === title);
-    if(movie){
-        res.status(201).json(movie);
-    }else{
-        res.status(400).send('no movie found');
-    }
+    Movies.findOne({title: req.params.title})
+        .then((movie)=>{
+            res.json(movie);
+        })
+        .catch((err)=>{
+            console.error(err);
+            res.status(500).send("Error: "+err);
+        });
 });
 
 //genre search 
 app.get('/movies/genre/:genreName', (req, res) => {
-    const {genreName}=req.params;
-    const genre=topTenMovies.find(movie=>movie.genre === genreName).genre; 
-    if(genre){
-        res.status(201).json(genre);
-    }else{
-        res.status(400).send('no genre found');
-    }
+   Movies.findOne({'Genre.Name': req.params.genreName})
+   .then((movie)=>{
+    res.json(movie.Genre);
+   })
+   .catch((err)=>{
+    console.error(err);
+    res.status(500).send('Error: ' + err);
+   });
 });
 
 //director data
 app.get('/movies/director/:directorName',(req,res)=>{
-    const{directorName} =req.params;
-    const director =topTenMovies.find(movie=> movie.director===directorName).director;
-    if (director){
-        res.status(201).json(director);
-    }else{
-        res.status(400).send('no director found');
-    }
+    Movies.findOne({ 'Director.Name': req.params.directorName })
+    .then((movie) => {
+      res.json(movie.Director);
+    })
+    .catch((err) => {
+      console.error(err);
+      res.status(500).send('Error: ' + err);
+    });
 });
 
 //register new user using POST
 app.post('/users',(req,res)=>{
-    let newUser=req.body;
-
-    if(!newUser.name){
-        const message='Missing name in request body';
-        res.status(400).send(message);
-    }else{
-        newUser.id=uuid.v4();
-        users.push(newUser);
-        res.status(201).send(newUser);
-    }
+    Users.findOne({Username: req.body.Username})
+        .then((user)=>{
+            if(user){
+                return res.status(400).send(req.body.Username+' already exists');
+            }else{
+            Users.create({
+                Username: req.body.Username,
+                Password: req.body.Password,
+                Email: req.body.Email,
+                Birthday: req.body.Birthday
+            })
+            .then((user)=>{res.status(201).json(user)})
+            .catch((error)=>{
+                console.error(error);
+                res.status(500).send("Error: "+error);
+            })
+        }
+    })
+    .catch((error)=>{
+        console.error(error);
+        res.status(500).send("Error: "+error);
+    });
 });
 
-//if user wants to update user info like username; using PUT
-app.put('/users/:id', (req, res)=>{
-    const {id}=req.params;
-    const userUpdate=req.body;
-
-    let user=users.find(user=>user.id === id);
-
-    if(user){
-        user.name=userUpdate.name;
-        res.status(201).json(user);
-    }else{
-        res.status(400).send('cannot update');
-    }
+//to update user info
+app.put('/users/:Username', (req, res)=>{
+    Users.findOneAndUpdate({Username: req.params.Username},
+    {$set:
+        {
+            Username: req.body.Username,
+            Password: req.body.Password,
+            Email: req.body.Email,
+            Birthday: req.body.Birthday
+        }
+    },
+    {new: true},(err,updatedUser)=>{
+        if(err){
+            console.error(err);
+            res.status(500).send('Error: '+err);
+        }else{
+            res.json(updatedUser);
+        }
+    });
 });
 
-//add movies to favorites using POST
-app.post('/users/:id/:favoriteMovieTitle', (req,res)=>{
-    const{id, favoriteMovieTitle}=req.params;
+//add movies to favorites using POST 
+app.post('/users/:Username/movies/:MovieID', (req,res)=>{
+    Users.findOneAndUpdate({Username: req.params.Username},{
+        $push: {FavoriteMovies: req.params.MovieID}
+    },
+    {new: true}, (err, updatedUser)=>{
+        if(err){
+            console.error(err);
+            res.status(500).send('Error: '+err);
+        }else{
+            res.json(updatedUser);
+        }
+     });
+    });
 
-    let user=users.find(user=>user.id ==id);
-
-    if(user){
-        user.favoriteMovieList.push(favoriteMovieTitle);
-        res.status(201).send('movie added to your favorites list');
-        console.log(favoriteMovieTitle);
-    }else{
-        res.status(400).send('movie not added');
-    }
-});
-
-//remove movies from favourites using DELETE
-app.delete('/users/:id/:favoriteMovieTitle', (req,res)=>{
-    const {id, favoriteMovieTitle} =req.params;
-    let user = users.find(user=>user.id ==id);
-    if(user){ user.favoriteMovieList=user.favoriteMovieList.filter(title=>title !== favoriteMovieTitle);
-        res.status(201).send('movie was deleted from your favorites');
-    }else{
-        res.status(400).send('movie was not deleted');
-    }
-});
+//remove movies from favourites using DELETE 
+app.delete('/users/:Username/movies/:MovieID',(req,res)=>{
+    Users.findOneAndUpdate({ Username: req.params.Username}, {
+        $pull: { FavoriteMovies: req.params.MovieID }
+      },
+      { new: true }, (err, updatedUser) => {
+       if (err) {
+         console.error(err);
+         res.status(500).send('Error: ' + err);
+       } else {
+         res.json(updatedUser);
+       }
+    });
+  });
 
 // Deletes user account using DELETE method
-app.delete('/users/:id', (req, res) => {
-    const {id} = req.params;
-    let user = users.find(user => user.id === id );
+  app.delete('/users/:Username', (req,res)=>{
+    Users.findOneAndRemove({ Username: req.params.Username}).then((user)=>{
+        if(!user){
+            res.status(400).send(req.params.Username + ' was not found');
+        }else{
+            res.status(200).send(req.params.Username + ' was deleted.');
+        }
+    })
+    .catch((err)=>{
+        console.error(err);
+        res.status(500).send('Error: '+err);
+    });
+  });
 
-    if (user) {
-      users = users.filter(user => user.id !== req.params.id);
-      res.status(201).send('User account ' + req.params.id + ' was deleted.');
-    }
+  //get all users ->this method is for testing purposes only
+  app.get('/users', (req, res) => {
+    Users.find()
+      .then((users) => {
+        res.status(201).json(users);
+      })
+      .catch((err) => {
+        console.error(err);
+        res.status(500).send('Error: ' + err);
+      });
   });
 
 app.listen(8080, ()=>{
