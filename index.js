@@ -12,7 +12,7 @@ const app = express();
 const Movies = Models.Movie;
 const Users = Models.User;
 
-mongoose.connect('mongodb://127.0.0.1:27017/MyFLIXMovieDB', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb://127.0.0.1:27017/MyMovieDB', { useNewUrlParser: true, useUnifiedTopology: true });
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -21,7 +21,6 @@ const accessLogStream = fs.createWriteStream(path.join(__dirname, "log.txt"),{fl
 
 app.use(morgan('common', {stream: accessLogStream}));
 app.use(express.static('public'));
-
 
 let topTenMovies = [
     {
@@ -203,40 +202,40 @@ let users = [
         username: 'Saule',
         password: 'saule123',
         email: 'saule@email.com',
-        Birthday: '1991-10-10',
-        FavoriteMovies: ["Avatar","Pirates of the Caribbean"]
+        birthday: '1991-10-10',
+        favoriteMovies: ["Avatar","Pirates of the Caribbean"]
     },
     {
         id: '2',
         username: 'Bakhtiyar',
         password: 'bakhtiyar123',
         email: 'bakhtiyar@email.com',
-        Birthday: '1992-10-10',
-        FavoriteMovies: ["Avatar"]
+        birthday: '1992-10-10',
+        favoriteMovies: ["Avatar"]
     },
     {
         id: '3',
         username: 'Juan',
         password: 'juan123',
         email: 'juan@email.com',
-        Birthday: '1993-10-10',
-        FavoriteMovies: ["Inception"]
+        birthday: '1993-10-10',
+        favoriteMovies: ["Inception"]
     },
     {
         id:'4',
         username: 'Katherine',
         password: 'katherine123',
         email: 'katherine@email.com',
-        Birthday: '1994-10-10',
-        FavoriteMovies: ["Coco"]
+        birthday: '1994-10-10',
+        favoriteMovies: ["Coco"]
     },
     {
         id: '5',
         username: 'Janet',
         password: 'janet123',
         email: 'janet@email.com',
-        Birthday: '1998-10-10',
-        FavoriteMovies: ["Star Wars"]
+        birthday: '1998-10-10',
+        favoriteMovies: ["Star Wars"]
     }
 ]
 
@@ -274,9 +273,11 @@ app.get('/movies/:title', (req, res)=> {
 
 //genre search 
 app.get('/movies/genre/:genreName', (req, res) => {
-   Movies.findOne({'Genre.Name': req.params.genreName})
+   Movies.findOne({
+     'genre.name': req.params.genreName
+   })
    .then((movie)=>{
-    res.json(movie.Genre);
+    res.json(movie.genre);
    })
    .catch((err)=>{
     console.error(err);
@@ -286,9 +287,11 @@ app.get('/movies/genre/:genreName', (req, res) => {
 
 //director data
 app.get('/movies/director/:directorName',(req,res)=>{
-    Movies.findOne({ 'Director.Name': req.params.directorName })
+    Movies.findOne({ 
+        'director.name': req.params.directorName 
+    })
     .then((movie) => {
-      res.json(movie.Director);
+      res.json(movie.director);
     })
     .catch((err) => {
       console.error(err);
@@ -298,16 +301,16 @@ app.get('/movies/director/:directorName',(req,res)=>{
 
 //register new user using POST
 app.post('/users',(req,res)=>{
-    Users.findOne({Username: req.body.Username})
+    Users.findOne({username: req.body.username})
         .then((user)=>{
             if(user){
-                return res.status(400).send(req.body.Username+' already exists');
+                return res.status(400).send(req.body.username+' already exists');
             }else{
             Users.create({
-                Username: req.body.Username,
-                Password: req.body.Password,
-                Email: req.body.Email,
-                Birthday: req.body.Birthday
+                username: req.body.username,
+                password: req.body.password,
+                email: req.body.email,
+                birthday: req.body.birthday
             })
             .then((user)=>{res.status(201).json(user)})
             .catch((error)=>{
@@ -323,30 +326,32 @@ app.post('/users',(req,res)=>{
 });
 
 //to update user info
-app.put('/users/:Username', (req, res)=>{
-    Users.findOneAndUpdate({Username: req.params.Username},
-    {$set:
-        {
-            Username: req.body.Username,
-            Password: req.body.Password,
-            Email: req.body.Email,
-            Birthday: req.body.Birthday
-        }
-    },
-    {new: true},(err,updatedUser)=>{
-        if(err){
-            console.error(err);
-            res.status(500).send('Error: '+err);
-        }else{
-            res.json(updatedUser);
-        }
+app.patch('/users/:username', (req, res)=>{
+    Users.findOneAndUpdate(
+        {username: req.params.username},
+        { $set: {
+            username: req.body.username,
+            password: req.body.password,
+            email: req.body.email,
+            birthday: req.body.birthday
+            }
+        },
+        { new: true },(err, updatedUser) => {
+            if(err) {
+                console.error(err);
+                res.status(500).send('Error: ' + err);
+            } else {
+                res.json(updatedUser);
+            }
     });
 });
 
+
 //add movies to favorites using POST 
-app.post('/users/:Username/movies/:MovieID', (req,res)=>{
-    Users.findOneAndUpdate({Username: req.params.Username},{
-        $push: {FavoriteMovies: req.params.MovieID}
+app.post('/users/:username/movies/:movieID', (req,res)=>{
+    Users.findOneAndUpdate({username: req.params.username},
+    {
+        $push: {favoriteMovies: req.params.movieID}
     },
     {new: true}, (err, updatedUser)=>{
         if(err){
@@ -359,9 +364,9 @@ app.post('/users/:Username/movies/:MovieID', (req,res)=>{
     });
 
 //remove movies from favourites using DELETE 
-app.delete('/users/:Username/movies/:MovieID',(req,res)=>{
-    Users.findOneAndUpdate({ Username: req.params.Username}, {
-        $pull: { FavoriteMovies: req.params.MovieID }
+app.delete('/users/:username/movies/:movieID',(req,res)=>{
+    Users.findOneAndUpdate({ username: req.params.username}, {
+        $pull: { favoriteMovies: req.params.movieID }
       },
       { new: true }, (err, updatedUser) => {
        if (err) {
@@ -369,17 +374,18 @@ app.delete('/users/:Username/movies/:MovieID',(req,res)=>{
          res.status(500).send('Error: ' + err);
        } else {
          res.json(updatedUser);
+         res.status(200).send('successfully deleted from favorites');
        }
     });
   });
 
 // Deletes user account using DELETE method
-  app.delete('/users/:Username', (req,res)=>{
-    Users.findOneAndRemove({ Username: req.params.Username}).then((user)=>{
+  app.delete('/users/:username', (req,res)=>{
+    Users.findOneAndRemove({ username: req.params.username}).then((user)=>{
         if(!user){
-            res.status(400).send(req.params.Username + ' was not found');
+            res.status(400).send(req.params.username + ' was not found');
         }else{
-            res.status(200).send(req.params.Username + ' was deleted.');
+            res.status(200).send(req.params.username + ' was deleted.');
         }
     })
     .catch((err)=>{
@@ -388,7 +394,7 @@ app.delete('/users/:Username/movies/:MovieID',(req,res)=>{
     });
   });
 
-  //get all users ->this method is for testing purposes only
+  //get all users
   app.get('/users', (req, res) => {
     Users.find()
       .then((users) => {
@@ -399,6 +405,18 @@ app.delete('/users/:Username/movies/:MovieID',(req,res)=>{
         res.status(500).send('Error: ' + err);
       });
   });
+
+  //gets info about a single user
+  app.get('/users/:username', (req, res)=> {
+    Users.findOne({username: req.params.username})
+        .then((user)=>{
+            res.json(user);
+        })
+        .catch((err)=>{
+            console.error(err);
+            res.status(500).send("Error: "+err);
+        });
+});
 
 app.listen(8080, ()=>{
     console.log('Your app is listening on port 8080.');
