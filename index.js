@@ -9,6 +9,8 @@ const express = require('express'),
 
 const app = express();
 
+const { check, validationResult } = require('express-validator');
+
 const Movies = Models.Movie;
 const Users = Models.User;
 
@@ -16,6 +18,25 @@ mongoose.connect('mongodb://127.0.0.1:27017/MyMovieDB', { useNewUrlParser: true,
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+const cors = require('cors');
+app.use(cors()); //allows requests from all origins
+
+
+//to give access to only certain origins
+// let allowedOrigins = ['http://localhost:8080', 'http://testsite.com'];
+
+// app.use(cors({
+//   origin: (origin, callback) => {
+//     if(!origin) return callback(null, true);
+//     if(allowedOrigins.indexOf(origin) === -1){ // If a specific origin isn’t found on the list of allowed origins
+//       let message = 'The CORS policy for this application doesn’t allow access from origin ' + origin;
+//       return callback(new Error(message ), false);
+//     }
+//     return callback(null, true);
+//   }
+// }));
+
 
 //importing auth.js file
 let auth = require('./auth')(app);
@@ -307,7 +328,28 @@ app.get('/movies/director/:directorName',  passport.authenticate('jwt', {session
 });
 
 //register new user using POST
-app.post('/users',  passport.authenticate('jwt', {session: false}), (req,res)=>{
+app.post('/users',  
+
+//validation logic
+[
+    check('Uername', 'username is required').isLength({min: 5}),
+    check('Username','username contains non alphanumeric characters - not allowed.').isAlphanumeric(),
+    check('Password', 'Password is required').not().isEmpty(),
+    check('Email', 'Email does not appear to be valid').isEmail()
+],
+//authentication
+passport.authenticate('jwt', {session: false}),
+(req,res)=>{
+
+// check the validation object for errors
+let errors = validationResult(req);
+
+if (!errors.isEmpty()) {
+    return res.status(422).json({ errors: errors.array() });
+    }
+
+    let hashedPassword = Users.hashPassword(req.body.Password);
+
     Users.findOne({username: req.body.username})
         .then((user)=>{
             if(user){
@@ -315,7 +357,7 @@ app.post('/users',  passport.authenticate('jwt', {session: false}), (req,res)=>{
             }else{
             Users.create({
                 username: req.body.username,
-                password: req.body.password,
+                password: hashedPassword, //or hashedpassword? and if yes, change let hashedPassword to lowercase
                 email: req.body.email,
                 birthday: req.body.birthday
             })
@@ -333,12 +375,28 @@ app.post('/users',  passport.authenticate('jwt', {session: false}), (req,res)=>{
 });
 
 //to update user info
-app.patch('/users/:username',  passport.authenticate('jwt', {session: false}), (req, res)=>{
+app.patch('/users/:username', 
+[
+    check('Username', 'Username is required').isLength({min: 5}),
+    check('Username', 'Username contains non alphanumeric characters - not allowed.').isAlphanumeric(),
+    check('Password', 'Password is required').not().isEmpty(),
+    check('Email', 'Email does not appear to be valid').isEmail()
+  ], 
+   passport.authenticate('jwt', {session: false}), (req, res)=>{
+
+    let errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.status(422).json({ errors: errors.array() });
+        }
+    
+        let hashedPassword = Users.hashPassword(req.body.Password);
+
     Users.findOneAndUpdate(
         {username: req.params.username},
         { $set: {
             username: req.body.username,
-            password: req.body.password,
+            password: hashedPassword,
             email: req.body.email,
             birthday: req.body.birthday
             }
@@ -371,7 +429,8 @@ app.post('/users/:username/movies/:movieID',  passport.authenticate('jwt', {sess
     });
 
 //remove movies from favourites using DELETE 
-app.delete('/users/:username/movies/:movieID',  passport.authenticate('jwt', {session: false}), (req,res)=>{
+app.delete('/users/:username/movies/:movieID', 
+passport.authenticate('jwt', {session: false}), (req,res)=>{
     Users.findOneAndUpdate({ username: req.params.username}, {
         $pull: { favoriteMovies: req.params.movieID }
       },
@@ -425,8 +484,14 @@ app.delete('/users/:username/movies/:movieID',  passport.authenticate('jwt', {se
         });
 });
 
-app.listen(8080, ()=>{
-    console.log('Your app is listening on port 8080.');
+// app.listen(8080, ()=>{
+//     console.log('Your app is listening on port 8080.');
+// });
+
+//replaced app.listen with this:
+const port = process.env.PORT || 8080;
+app.listen(port, '0.0.0.0',() => {
+ console.log('Listening on Port ' + port);
 });
 
 app.use((err, req, res, next)=>{
