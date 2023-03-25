@@ -14,13 +14,7 @@ const { check, validationResult } = require('express-validator');
 const Movies = Models.Movie;
 const Users = Models.User;
 
-//connecting mongo method 1
 // mongoose.connect('mongodb://127.0.0.1:27017/MyMovieDB', { useNewUrlParser: true, useUnifiedTopology: true });
-
-//connecting mongo method 2
-//mongoose.connect('mongodb+srv://myFlixAdmin:xMSfQTK7IQjxIAVn@cluster0.uh7ezj7.mongodb.net/MyMovieDB?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
-
-//mongo+heroku config variables
 mongoose.connect( process.env.CONNECTION_URI, { useNewUrlParser: true, useUnifiedTopology: true });
 
 app.use(bodyParser.json());
